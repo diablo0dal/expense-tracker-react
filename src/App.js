@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 // ── Constants ──────────────────────────────────────────────
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = process.env.REACT_APP_API_URL || 'https://my-backend-1-25r0.onrender.com';
 
 const CATEGORIES = [
   { value: "Food",          label: "Food",          emoji: "🍔" },
@@ -191,7 +191,7 @@ function LoginPage({ onLogin, onGoRegister }) {
     setLoading(true);
     setError("");
     try {
-      const res  = await fetch(`${API_BASE}/auth/login`, {
+      const res  = await fetch(`${API_BASE}/API/auth/login`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ username: username.trim().toLowerCase(), password }),
@@ -276,7 +276,7 @@ function RegisterPage({ onLogin, onGoLogin }) {
     setLoading(true);
     setError("");
     try {
-      const res  = await fetch(`${API_BASE}/auth/register`, {
+      const res  = await fetch(`${API_BASE}/API/auth/register`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ username: username.trim().toLowerCase(), password }),
@@ -377,7 +377,7 @@ function ExpenseTracker({ user, token, onLogout }) {
     setLoading(true);
     setFetchError("");
     try {
-      const res = await fetch(`${API_BASE}/expenses`, { headers: authHeaders });
+      const res = await fetch(`${API_BASE}/API/expenses`, { headers: authHeaders });
       if (res.status === 401) { onLogout(); return; }   // token expired
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       setExpenses(await res.json());
@@ -401,7 +401,7 @@ function ExpenseTracker({ user, token, onLogout }) {
 
     setSubmitting(true);
     try {
-      const res  = await fetch(`${API_BASE}/expenses`, {
+      const res  = await fetch(`${API_BASE}/API/expenses`, {
         method: "POST",
         headers: authHeaders,
         body:   JSON.stringify({ name: trimmed, amount: parsed, category }),
@@ -425,7 +425,7 @@ function ExpenseTracker({ user, token, onLogout }) {
   async function deleteExpense(id) {
     setDeletingIds(prev => [...prev, id]);
     try {
-      const res  = await fetch(`${API_BASE}/expenses/${id}`, {
+      const res  = await fetch(`${API_BASE}/API/expenses/${id}`, {
         method: "DELETE",
         headers: authHeaders,
       });
@@ -451,7 +451,7 @@ function ExpenseTracker({ user, token, onLogout }) {
     .filter(e => selectedCategory === "All" || e.category === selectedCategory)
     .sort((a, b) => sortDesc ? b.amount - a.amount : 0);
 
-  const total = filtered.reduce((sum, e) => sum + e.amount, 0);
+  const total = filtered.reduce((sum, e) => sum + Number(e.amount), 0);
 
   // ── Render ──
   return (
